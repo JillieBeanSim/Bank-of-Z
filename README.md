@@ -219,18 +219,14 @@ Bank of Z requires a mainframe runtime environment.
 
 - Appropriate permissions for USS directories and dataset creation
 - Git installed and available in PATH on USS
-- zConfig for provisioning the middleware configuration
+- [zconfig](https://ibm.biz/zconfig-join) for provisioning the middleware configuration
   - CICS region for application deployment
 - Db2 for z/OS
 - IMS 
 - IBM DBB 3.0.4.1 installed (typically at `/usr/lpp/IBM/dbb`)
 - ZOAU 1.4.1.0 installed (typically at `/usr/lpp/IBM/zoautil`)
 - Wazi Deploy 3.0.7.2 installed (typically at `/global/opt/pyenv/gdp`)
-
-### Setup Bank of Z
-
-* Take a fork this repository, or move it into your own git provider
-* Follow the initial setup instuctions in [.setup/README.md](.setup/README.md) to install and configure Bank of Z to your own runtime environment.
+- [CICS TS Resource Builde](https://www.ibm.com/docs/en/cics-resource-builder/1.0.x?topic=installing-planning-installation-cics-ts-resource-builder)r 
 
 ### Setup IDE
 
@@ -278,42 +274,10 @@ Once downloaded, to manually install the extension into the Bob IDE select the e
 
 ### Build and Install Bank of Z
 
-Building and installing Bank of Z comes with two options. You can either directly clone this repository to Unix System Services, or leverage the configured [VS Code tasks](#using-vs-code-tasks)
+### Setup Bank of Z
 
-#### Option 1: Setup via terminal session
-
-#### Option 2: Using VS Code Tasks
-
-The easiest way to get started is using the built-in VS Code tasks:
-
-1. **Configure Your Environment variables**
-   Review [.setup/config/config.yaml](.setup/config/config.yaml) if you want to change the defaults, e.g.
-
-2. **Run Setup Task**
-
-   - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
-   - Type "Tasks: Run Task"
-   - Select **"Setup Pipeline Environment"**
-   
-   This will:
-   - Create workspace directories on USS
-   - Clone IBM DBB repository
-   - Upload zBuilder framework configurations
-   - Install Bank of Z into a new CICS instance.
-
-3. **Run Pipeline Simulation**
-
-   - You must adpat this file before [pipeline_simulation.sh](.setup/pipeline_simulation.sh)  (TODO needs variables)
-   - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
-   - Type "Tasks: Run Task"
-   - Select **"Run Pipeline Simulation"**
-   - Enter git repository URL and branch when prompted
-   
-   The pipeline will:
-   - Clone your application repository
-   - Build all COBOL programs and BMS maps
-   - Create load modules
-   - Generate build reports
+* Take a fork this repository, or move it into your own git provider
+* Follow the initial setup instuctions in [docs/README.md](docs/README.md) to install and configure Bank of Z to your own runtime environment.
 
 ## Tutorials
 
@@ -331,8 +295,7 @@ After setting up Bank of Z in your environment, you can exercise the following d
 
 ## Documentation
 
-- **[Setup Guide](docs/SETUP_GUIDE.md)** - Comprehensive setup instructions, troubleshooting, and customization
-- **[Setup Directory README](.setup/README.md)** - Details on setup scripts and configuration
+- **[Setup Guide](docs/README.md)** - Comprehensive setup instructions, troubleshooting, and customization
 - **[Source Code README](src/README.md)** - Application source code structure
 
 ## Troubleshooting

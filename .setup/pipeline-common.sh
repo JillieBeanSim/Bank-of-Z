@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 
 #########################################################
-# Common Pipeline Script for Bank of Z
+# Common Setup Script for Bank of Z
 # This script runs directly on z/OS USS (not remotely)
 # 
 # Used by:
 #   - GRUB workflow (runs natively after sync)
 #   - VSCode task workflow (triggered via Zowe CLI)
 #
-# Purpose: Rebuild and redeploy Bank of Z application
-#
-# Usage: bash pipeline-common.sh
+# Usage: bash pipeline-common.sh [workspace_path]
 #########################################################
 
 set -e  # Exit on error
@@ -19,156 +17,197 @@ set -e  # Exit on error
 # Source library scripts
 # =========================
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export LIB_DIR="$SCRIPTS_DIR/lib"
-source "$LIB_DIR/colors.sh"
-source "$LIB_DIR/prerequisites.sh"
-source "$LIB_DIR/utilities.sh"
+source "$SCRIPTS_DIR/config/setenv.sh"
 
 
-# =========================
-# Get pipeline parameters
-# =========================
-get_pipeline_parameters() {
-    print_stage "Pipeline Parameters"
+#########################################################
+# STAGE: Build Bank of Z
+#########################################################
+stage_build_bank_of_z() {
+    print_stage "STAGE: Build Bank of Z"
     
-    # Get temporary HLQ
-    TMPHLQ=$(printf '%s' "${PIPELINE_TMPHLQ:-$(basename "$HOME")}" | tr '[:lower:]' '[:upper:]')
-    
-    # Get git information
-    if [ "$EXECUTION_MODE" = "grub" ]; then
-        # Try to get remote URL, fallback to defaults if remote doesn't exist
-        if git remote get-url origin > /dev/null 2>&1; then
-            gitRepository=$(git remote get-url origin | sed 's#.*/##' | sed 's/\.git$//')
-        else
-            gitRepository="${GIT_REPOSITORY:-Bank-of-Z}"
-        fi
-        branchName=$(git branch --show-current)
-    else
-        # For VSCode workflow, use environment variables or defaults
-        gitRepository="${GIT_REPOSITORY:-Bank-of-Z}"
-        branchName="${GIT_BRANCH:-main}"
-    fi
-    
-    echo "  Git Repository: $gitRepository"
-    echo "  Branch: $branchName"
-    echo "  Temporary HLQ: $TMPHLQ"
-    echo "  Workspace: $WORKSPACE_DIR"
-    echo ""
-}
-
-# =======================================
-# Stage: Refresh git (VSCode only)
-# =======================================
-stage_refresh_git() {
-    print_stage "STAGE: Refresh Git Repository"
-    
-    if [ "$EXECUTION_MODE" = "grub" ]; then
-        print_info "GRUB mode: Skipping git refresh (already synced)"
-        return 0
-    fi
-    
-    print_info "VSCode mode: Refreshing git repository..."
-    cd "$WORKSPACE_DIR"
-    
-    if git rev-parse --git-dir > /dev/null 2>&1; then
-        print_info "Resetting and pulling latest changes..."
-        git reset --hard
-        # Only pull if remote exists
-        if git remote get-url origin > /dev/null 2>&1; then
-            git pull
-            print_success "Git repository refreshed"
-        else
-            print_warning "No remote configured, skipping pull"
-            print_success "Git repository reset"
-        fi
-    else
-        print_warning "Not a git repository, skipping refresh"
-    fi
-}
-
-# =======================================
-# Stage: DBB Build
-# =======================================
-stage_dbb_build() {
-    print_stage "STAGE: DBB Build"
-    
-    cd "$SCRIPTS_DIR"
-    
-    if [ ! -f "tasks/task-dbb-build.sh" ]; then
-        print_error "DBB build task not found: tasks/task-dbb-build.sh"
+    # Verify installation script exists
+    if [ ! -f "$BANK_DIR/.setup/tasks/task-dbb-build.sh" ]; then
+        print_error "Installation script not found: $BANK_DIR/.setup/tasks/task-dbb-build.sh"
         exit 1
     fi
     
-    print_info "Executing DBB build task..."
-    bash tasks/task-dbb-build.sh
+    # Run installation script
+    print_info "Running Bank of Z build script..."
+    print_info "Executing: bash $BANK_DIR/.setup/tasks/task-dbb-build.sh $1"
+    cd "$BANK_DIR"
     
-    print_success "DBB build completed"
+    set -o pipefail
+    if bash ${BANK_DIR}/.setup/tasks/task-dbb-build.sh $1; then
+        print_success "Bank of Z application build completed successfully"
+    else
+        print_error "Failed to build Bank of Z"
+        exit 1
+    fi
 }
 
-# =======================================
-# Stage: Deploy Build
-# =======================================
-stage_deploy_build() {
-    print_stage "STAGE: Deploy Build"
+#########################################################
+# STAGE: Deploy Bank of Z
+#########################################################
+stage_deploy_bank_of_z() {
+    print_stage "STAGE: Deploy Bank of Z"
     
-    cd "$SCRIPTS_DIR"
-    
-    if [ ! -f "tasks/task-wazi-deploy.sh" ]; then
-        print_error "Wazi deploy task not found: tasks/task-wazi-deploy.sh"
+    # Verify installation script exists
+    if [ ! -f "$BANK_DIR/.setup/tasks/task-wazi-deploy.sh" ]; then
+        print_error "Installation script not found: $BANK_DIR/.setup/tasks/task-wazi-deploy.sh"
         exit 1
     fi
     
-    print_info "Executing Wazi deploy task..."
+    # Run installation script
+    print_info "Running Bank of Z deploy script..."
+    print_info "Executing: bash $BANK_DIR/.setup/tasks/task-wazi-deploy.sh"
+    cd "$BANK_DIR"
     
-    # Run deploy in background to handle ZOAU/ZOWE issues
-    bash tasks/task-wazi-deploy.sh &
+    set -o pipefail
+    ${BANK_DIR}/.setup/tasks/task-wazi-deploy.sh&
     PID=$!
-    
-    # Wait for deployment to complete
-    wait $PID
-    RC=$?
-    
-    if [ $RC -eq 0 ]; then
-        print_success "Deployment completed successfully"
+    # Wait for deployment to complete (ZOAU/ZOWE ISSUE)
+    if wait "$PID"; then
+        print_success "Bank of Z application deploy completed successfully"
     else
-        print_error "Deployment failed with RC=$RC"
-        exit $RC
+        print_error "Failed to deploy Bank of Z"
+        exit 1
     fi
+}
+
+
+#########################################################
+# Main execution helpers
+#########################################################
+print_phase_next_step() {
+    local completed_phase="$1"
+
+    echo ""
+    case "$completed_phase" in
+        validation)
+            print_info "Next step: run this script in pipeline mode to initialize the workspace and infrastructure prerequisites."
+            ;;
+        pipeline)
+            print_info "Next step: run this script in build-baseline mode to build and deploy the Bank of Z baseline."
+            ;;
+        build-baseline)
+            print_info "Next step: baseline deployment is complete. Proceed with application verification or follow-on customization."
+            ;;
+    esac
+}
+
+print_usage() {
+    echo "Usage: bash pipeline-common.sh <phase>"
+    echo ""
+    echo "Phases:"
+    echo "  validate-prereqs  Validate prerequisites (zConfig, DBB, wazi-deploy)"
+    echo "  build             Build the Bank of Z baseline"
+    echo "  deploy            Deploy the Bank of Z baseline"
+    echo "  build-and-deploy  Build and deploy the Bank of Z updates"
+    echo ""
+    echo "Examples:"
+    echo "  bash pipeline-common.sh validate-prereqs"
+    echo "  bash pipeline-common.sh build"
+    echo "  bash pipeline-common.sh deploy"
+    echo "  bash pipeline-common.sh build-and-deploy"
+}
+
+print_phase_next_step() {
+    local completed_phase="$1"
+
+    echo ""
+    case "$completed_phase" in
+        validation)
+            print_info "Next step: build Bank of Z."
+            ;;
+        build)
+            print_info "Next step: deploy Bank of Z."
+            ;;
+    esac
 }
 
 #########################################################
 # Main execution
 #########################################################
-main() {
+main_validation() {
     echo ""
-    echo -e "${GREEN}######################################################${NC}"
-    echo -e "${GREEN}#  Bank of Z - Pipeline Simulation (z/OS USS)        #${NC}"
-    echo -e "${GREEN}######################################################${NC}"
+    SYS=$(uname -Ia)
+    print_info "Running on: $SYS"
     echo ""
-    
-    # Detect execution mode
-    detect_execution_mode
-    
-    # Get pipeline parameters
-    get_pipeline_parameters
-    
-    # Execute stages
-    stage_refresh_git
-    stage_dbb_build
-    stage_deploy_build
-    
+
     # Summary
-    print_stage "PIPELINE COMPLETE"
-    print_success "Pipeline simulation completed successfully!"
+    print_stage "VALIDATION COMPLETE"
+    print_success "Environment validation completed successfully!"
+    print_phase_next_step "validation"
+}
+
+main_build() {
     echo ""
-    echo "Next steps:"
-    echo "  1. Verify CICS region is updated"
-    echo "  2. Test application changes via x3270"
-    echo "  3. Review build logs if needed"
+    SYS=$(uname -Ia)
+    print_info "Running on: $SYS"
     echo ""
+
+    stage_build_bank_of_z $*
+
+    # Summary
+    print_stage "BUILD COMPLETE"
+    print_success "Build completed successfully!"
+    print_phase_next_step "build"
+}
+
+main_deploy() {
+    echo ""
+    SYS=$(uname -Ia)
+    print_info "Running on: $SYS"
+    echo ""
+
+    stage_deploy_bank_of_z
+
+    # Summary
+    print_stage "DEPLOY COMPLETE"
+    print_success "DEPLOY setup completed successfully!"
+}
+
+#########################################################
+# Main execution
+#########################################################
+
+main() {
+    local phase="${1:-}"
+
+    # Detect Execution Mode
+    detect_bank_of_z_location
+
+    case "$phase" in
+        validate-prereqs)
+            main_validation
+            ;;
+        build)
+            shift  # Remove 'build' from parameters
+            main_build "$@"
+            ;;
+        deploy)
+            main_deploy
+            ;;
+        build-and-deploy)
+            shift  # Remove 'build-and-deploy' from parameters
+            main_build "$@"
+            main_deploy
+            ;;
+        -h|--help|help|"")
+            print_usage
+            ;;
+        *)
+            print_error "Unknown phase: $phase"
+            echo ""
+            print_usage
+            exit 1
+            ;;
+    esac
 }
 
 # Run main function
 main "$@"
+exit $?
 
 # Made with Bob

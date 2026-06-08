@@ -25,13 +25,23 @@ stage_execute_pipeline() {
     print_info "This will:"
     print_info "  - Refresh git repository (pull latest)"
     print_info "  - Run DBB build"
-    print_info "  - Deploy to CICS"
+    print_info "  - Deploy build"
     echo ""
+    
+    if [[ "$EXECUTION_MODE" != "grub" ]]; then
+        cd $SCRIPTS_DIR
+        git reset --hard
+        git pull
+    fi
     
     # Execute the pipeline script on remote
     set -o pipefail
     
-    if $SCRIPTS_DIR/pipeline-common.sh; then
+    chmod +x ${SCRIPTS_DIR}/pipeline-common.sh
+    bash ${SCRIPTS_DIR}/pipeline-common.sh build-and-deploy&
+    PID=$!
+    # Wait for deployment to complete (ZOAU/ZOWE ISSUE)
+    if wait "$PID"; then
         print_success "Remote pipeline completed successfully"
     else
         print_error "Failed to execute pipeline on remote system"

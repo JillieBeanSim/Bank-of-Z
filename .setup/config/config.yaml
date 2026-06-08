@@ -70,21 +70,17 @@ zcodescan:
   # Java runtime for scanning tools
   java_home: ${java.java_home}
   # Working directory
-  cwd_dir: ${sandbox.path}/zDevOps/applications/CBSA/application
+  cwd_dir: ${sandbox.path}
   # Source directory to scan
-  src_dir: ${sandbox.path}/zDevOps/applications/CBSA/application/src/base
+  src_dir: ${sandbox.path}/${REPO_NAME}/src/base
   # Output directory for scan reports
-  output_dir: ${sandbox.path}/zDevOps/applications/CBSA/application/zcodescan
+  output_dir: ${sandbox.path}/zcodescan
   # Rules file to apply
-  rule_file: ${sandbox.path}/zDevOps/zcodescan/zcodescan-rules.yaml
+  rule_file: ${sandbox.path}/${REPO_NAME}/zcodescan/zcodescan-rules.yaml
   # Source encoding (z/OS default encoding)
   src_encoding: IBM-1047
   # ZCodeScan RESAPI connection info to check for IDZ EE license.
-  rseapi_url: https://127.0.0.1:8195
-  rseapi_user: ${RESAPI_USER} # env var
-  rseapi_password: ${RESAPI_PASSWORD} # env var
-  rseapi_verify: false
-  
+  config_file: ${HOME}/zcs_config_file.yml
 
 # Wazi Deploy (deployment automation)
 wazideploy:
@@ -108,11 +104,11 @@ taz:
   # TAZ CLI installation directory
   taz_home: /usr/local/sandboxes/tools/taz-280/test-cli
   # Root directory containing test suites
-  test_dir: ${sandbox.path}/zDevOps
+  test_dir: ${sandbox.path}/${REPO_NAME}
   # JES procedure library
   proclib: SYS1.PROCLIB
   # Load library used during execution
-  library: ${app.base_name}.${app.zos_version}.LOAD
+  library: ${app.base_name}.${app.zos_version}.LOADLIB
   # STEPLIB for runtime/debug
   steplib: EQAW.VHR0M0.PTF.SEQAMOD
 
@@ -127,11 +123,6 @@ zosconnect:
   # HTTP/HTTPS ports
   http_port: 9080
   https_port: 9443
-
-# Frontend (Node.js runtime)
-fronted:
-  # Node.js runtime for z/OS
-  node_home: /usr/lpp/IBM/cnj/IBM/node-latest-os390-s390x
 
 # ZOAU installtion directory
 zoau:
@@ -150,4 +141,5 @@ cics:
   password: ${CICS_PASSWORD} # env var
   cmci_port: 27100
   ipic_port: 4320
+  debug_port: 27103
 

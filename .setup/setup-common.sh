@@ -20,47 +20,6 @@ SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPTS_DIR/config/setenv.sh"
 
 #########################################################
-# STAGE: Initialize Working Directory
-#########################################################
-stage_initialize_workspace() {
-    print_stage "STAGE: Initialize Working Directory"
-    
-    print_info "Target workspace: $BANK_OF_Z_WORK_DIR"
-    
-    # Check if directory exists
-    if [ -d "$BANK_OF_Z_WORK_DIR" ]; then
-        if [[ "$EXECUTION_MODE" == "grub" ]]; then
-            print_info "Keeping existing workspace directory"
-            return 0
-        else
-            print_warning "Workspace directory already exists: $BANK_OF_Z_WORK_DIR"
-            read -p "Do you want to delete and recreate it? (y/N): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                print_info "Deleting existing workspace directory..."
-                rm -rf "$BANK_OF_Z_WORK_DIR"
-                print_success "Existing workspace deleted"
-            else
-                print_info "Keeping existing workspace directory"
-                return 0
-            fi
-        fi
-    fi
-    
-    # Create workspace directory
-    print_info "Creating workspace directory: $BANK_OF_Z_WORK_DIR"
-    mkdir -p "$BANK_OF_Z_WORK_DIR"
-    
-    # Purge DBB metadata cache
-    if [ -d "$HOME/.dbb" ]; then
-        rm -rf "$HOME/.dbb"
-        print_success "DBB metadata cache purged"
-    fi
-    
-    print_success "Workspace directory initialized: $BANK_OF_Z_WORK_DIR"
-}
-
-#########################################################
 # STAGE: Clone Required Accelerators
 #########################################################
 stage_clone_accelerators() {
@@ -187,32 +146,6 @@ stage_copy_framework() {
     print_success "zBuilder framework setup completed successfully"
 }
 
-#########################################################
-# STAGE: Setup Bank of Z application
-#########################################################
-stage_setup_bank_of_z() {
-    print_stage "STAGE: Setup Bank of Z"
-    
-    # Verify installation script exists
-    if [ ! -f "$BANK_DIR/.setup/setup/setup-application.sh" ]; then
-        print_error "Installation script not found: $BANK_DIR/.setup/setup/setup-application.sh"
-        exit 1
-    fi
-    
-    # Run installation script
-    print_info "Running Bank of Z application script..."
-    print_info "Executing: bash $BANK_DIR/.setup/setup/setup-application.sh"
-    cd "$BANK_DIR"
-    
-    set -o pipefail
-    if bash .setup/setup/setup-application.sh; then
-        print_success "Bank of Z application setup completed successfully"
-    else
-        print_error "Failed to install Bank of Z"
-        print_info "Check /tmp/build.log for details"
-        exit 1
-    fi
-}
 
 #########################################################
 # STAGE: Setup Bank of Z databse
@@ -231,11 +164,36 @@ stage_setup_database() {
     cd "$BANK_DIR"
     
     set -o pipefail
-    if bash .setup/setup/setup-db2-tables.sh; then
+    if .setup/setup/setup-db2-tables.sh; then
         print_success "Bank of Z application setup completed successfully"
     else
         print_error "Failed to install Bank of Z"
-        print_info "Check /tmp/build.log for details"
+        exit 1
+    fi
+
+}
+
+#########################################################
+# STAGE: Populate DB2 database
+#########################################################
+stage_populate_database() {
+    print_stage "STAGE: Populate DB2 database"
+
+    if [ ! -f "$BANK_DIR/.setup/setup/populate-db2-tables.sh" ]; then
+        print_error "Installation script not found: $BANK_DIR/.setup/setup/populate-db2-tables.sh"
+        exit 1
+    fi
+    
+    # Run script
+    print_info "Running Bank of Z database populate script..."
+    print_info "Executing: bash $BANK_DIR/.setup/setup/populate-db2-tables.sh"
+    cd "$BANK_DIR"
+    
+    set -o pipefail
+    if .setup/setup/populate-db2-tables.sh; then
+        print_success "Bank of Z application populate completed successfully"
+    else
+        print_error "Failed to populate Bank of Z database"
         exit 1
     fi
 
@@ -262,7 +220,6 @@ stage_setup_zosconnect_server() {
         print_success "Bank of Z application setup completed successfully"
     else
         print_error "Failed to install Bank of Z"
-        print_info "Check /tmp/build.log for details"
         exit 1
     fi
 
@@ -287,14 +244,12 @@ stage_setup_cics_region() {
     cd "$BANK_DIR"
     
     set -o pipefail
-    if bash .setup/setup/setup-cics-region.sh; then
+    if  .setup/setup/setup-cics-region.sh; then
         print_success "Bank of Z application setup completed successfully"
     else
         print_error "Failed to install Bank of Z"
-        print_info "Check /tmp/build.log for details"
         exit 1
     fi
-
 }
 
 #########################################################
@@ -329,6 +284,7 @@ print_usage() {
     echo "  bash setup-common.sh validate-prereqs"
     echo "  bash setup-common.sh environment"
     echo "  bash setup-common.sh install-bank-of-z"
+    echo "  bash setup-common.sh update-bank-of-z"
 }
 
 #########################################################
@@ -340,10 +296,6 @@ main_setup() {
     print_info "Running on: $SYS"
     echo ""
 
-    # Execute stages
-    if [[ "$EXECUTION_MODE" != "grub" ]]; then
-        stage_initialize_workspace
-    fi
     stage_clone_accelerators
     stage_copy_framework
 
@@ -360,31 +312,44 @@ main_setup() {
     print_phase_next_step "setup"
 }
 
+#########################################################
+# STAGE: Validate Installation
+#########################################################
+stage_validate_install() {
+    print_stage "STAGE: Validate Installation"
+
+    if [ ! -f "$BANK_DIR/.setup/setup/validate-install.sh" ]; then
+        print_error "Validation script not found: $BANK_DIR/.setup/setup/validate-install.sh"
+        exit 1
+    fi
+    
+    # Run validation script
+    print_info "Running Bank of Z installation validation script..."
+    print_info "Executing: bash $BANK_DIR/.setup/setup/validate-install.sh"
+    cd "$BANK_DIR"
+    
+    set -o pipefail
+    if bash .setup/setup/validate-install.sh; then
+        print_success "Installation validation completed successfully"
+    else
+        print_error "Installation validation failed"
+        exit 1
+    fi
+}
+
 main_validation() {
     echo ""
     SYS=$(uname -Ia)
     print_info "Running on: $SYS"
     echo ""
 
+    # Validate installation
+    stage_validate_install
+
     # Summary
     print_stage "VALIDATION COMPLETE"
     print_success "Environment validation completed successfully!"
     print_phase_next_step "validation"
-}
-
-main_build_baseline() {
-
-    echo ""
-    SYS=$(uname -Ia)
-    print_info "Running on: $SYS"
-    echo ""
-
-    stage_setup_bank_of_z
-
-    # Summary
-    print_stage "BUILD BASELINE COMPLETE"
-    print_success "Bank of Z baseline built and deployed successfully!"
-    print_phase_next_step "build-baseline"
 }
 
 main() {
@@ -401,12 +366,17 @@ main() {
             main_setup
             ;;
         install-bank-of-z)
-            main_build_baseline
-            ;;
-        all)
-            main_validation
-            main_setup
-            main_build_baseline
+            chmod +x ${SCRIPTS_DIR}/pipeline-common.sh
+            bash ${SCRIPTS_DIR}/pipeline-common.sh build-and-deploy full &
+            PID=$!
+            # Wait for deployment to complete (ZOAU/ZOWE ISSUE)
+            if wait "$PID"; then
+                print_success "Remote pipeline completed successfully"
+            else
+                print_error "Failed to execute pipeline on remote system"
+                exit 1
+            fi
+            stage_populate_database
             ;;
         -h|--help|help|"")
             print_usage
