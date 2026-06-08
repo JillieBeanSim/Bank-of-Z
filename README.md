@@ -80,8 +80,6 @@ graph LR
     style BANKQ2 fill:#ffebee
 ```
 
-
-
 ### Customer Routing
 
 - Customers with ID pattern **Cnnnn** → Routed to CICS
@@ -117,8 +115,6 @@ Bank-of-Z/
 - **IBM DBB Integration** - Modern build automation for z/OS applications
 - **Pipeline Simulation** - Automated build and deployment workflows
 
-
-
 ## Quick Start
 
 ### Prerequisites
@@ -131,19 +127,21 @@ Bank-of-Z/
     - `npm -v`
   - node: ">=22.22.1 < 23"
     - `node -v`
-- [Zowe CLI](https://docs.zowe.org/stable/user-guide/cli-installcli): 
+- [Zowe CLI](https://docs.zowe.org/stable/user-guide/cli-installcli):
   - `npm install -g @zowe/cli@zowe-v3-lts`
-- Zowe RSE API Plugin: 
+- Zowe RSE API Plugin:
   - `zowe plugins install @ibm/rse-api-for-zowe-cli`
 - Configured Zowe profile with z/OS connection details
 
 Here is a sample configuration for the Zowe profile. Change:
--  the 'host' line to match your z/OS host
+
+- the 'host' line to match your z/OS host
 - the 'account' line to match your TSO account on the host
 - the 'logonProcedure' line to match your logon procedure on the host
 
 and if you use non-default ports, you may have to change other lines as well.
 Save the file in: `~/.zowe/zowe.config.json`
+
 ```json
 {
   "$schema": "./zowe.schema.json",
@@ -209,6 +207,7 @@ Save the file in: `~/.zowe/zowe.config.json`
 ```
 
 You can then test each connection. Example:
+
 - `zowe zosmf check status`
 - `zowe rse check status`
 - ...
@@ -222,13 +221,15 @@ Bank of Z requires a mainframe runtime environment.
 - [zconfig](https://ibm.biz/zconfig-join) for provisioning the middleware configuration
   - CICS region for application deployment
 - Db2 for z/OS
-- IMS 
+- IMS
 - IBM DBB 3.0.4.1 installed (typically at `/usr/lpp/IBM/dbb`)
 - ZOAU 1.4.1.0 installed (typically at `/usr/lpp/IBM/zoautil`)
 - Wazi Deploy 3.0.7.2 installed (typically at `/global/opt/pyenv/gdp`)
-- [CICS TS Resource Builde](https://www.ibm.com/docs/en/cics-resource-builder/1.0.x?topic=installing-planning-installation-cics-ts-resource-builder)r 
+- [CICS TS Resource Builder](https://www.ibm.com/docs/en/cics-resource-builder/1.0.x?topic=installing-planning-installation-cics-ts-resource-builder)
 
 ### Setup IDE
+
+If a `VS Code` or `Open VSX` link available, the extension can be installed via the marketplace, with Bob IDE using the Open VSX marketplace.  If setting up the Bob IDE environment and the extension is not avaialble in the Open VSX Marketplace use the `Download VSIX` link to download the extensions .vsix from the VS Code Marketplace and [manually install it in the IDE](#manual-installation-of-vsix).
 
 Install Bob IDE and/or VS Code IDE and required extensions:
 
@@ -238,46 +239,26 @@ Install Bob IDE and/or VS Code IDE and required extensions:
   - IBM Compiled Code Coverage
   - Zowe Explorer
   - Zowe Explorer for IBM CICS Transaction Server
-- CICS Interdependency Analyzer Extension for Zowe Explorer: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.cics-ia-extension-for-zowe), Open VSX (n/a)
-- IBM IMS Explorer for VS Code: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.ims-explorer-for-vscode), Open VSX (n/a)
+- CICS Interdependency Analyzer Extension for Zowe Explorer: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.cics-ia-extension-for-zowe), Open VSX, [Download VSIX](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/cics-ia-extension-for-zowe/latest/vspackage)
+- IBM IMS Explorer for VS Code: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.ims-explorer-for-vscode), Open VSX, [Download VSIX](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/ims-explorer-for-vscode/latest/vspackage)
 - IBM Db2 for z/OS Developer Extension: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.db2forzosdeveloperextension), [Open VSX](https://open-vsx.org/extension/IBM/db2forzosdeveloperextension)
-- IBM z/OS Connect development tools: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.ibm-zosconnect), Open VSX (n/a)
+- IBM z/OS Connect development tools: [VS Code](https://marketplace.visualstudio.com/items?itemName=IBM.ibm-zosconnect), Open VSX, [Download VSIX](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/ibm-zosconnect/latest/vspackage)
 - MQ (no IBM extension in VS Code marketplace) - IBM docs for [IBM MQ Console within Visual Studio Code's built-in browser](https://community.ibm.com/community/user/blogs/dorothy-quincy/2026/05/08/ibm-mq-console-extension) that links to an extension in teh github.com/ibm-messaging group.
 
-Bob IDE uses Open VSX for it's marketplace.  For extension not in the Open VSX marketplace but exist in VS Code marketplace, use an alternative download method to obtain the .vsix from VS Code marketplace to be installed manually into Bob IDE.
+#### Manual Installation of VSIX
 
-Using the browser to download, the URL will be comprised of the extensions Publisher ID, and Extension ID.
+To manually install the extension into the Bob IDE or VS Code:
 
-For example:
-
-Example URL for CICS Interdependency Analyzer Extension for Zowe Explorer on the VS Code marketplace:
-`https://marketplace.visualstudio.com/items?itemName=IBM.cics-ia-extension-for-zowe`
-
-Publisher ID:
-`IBM`
-
-Extension ID:
-`cics-ia-extension-for-zowe`
-
-Construct the Download URL:
-
-The general structure is
-`https://marketplace.visualstudio.com/_apis/public/gallery/publishers/<Publisher ID>/vsextensions/<Extension ID>/<Version>/vspackage`
-To find the correct Version, check the Version History tab on the extension's Marketplace page or use `latest` as the version to download the latest published version.
-
-Example for CICS Interdependency Analyzer Extension for Zowe Explorer (using the IDs above)
-`https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/cics-ia-extension-for-zowe/latest/vspackage`
-
-Drop constructed URL into the browser and download should initiate.
-
-Once downloaded, to manually install the extension into the Bob IDE select the extensions icon located in the Activity Bar on the left side of the IDE.  Select the `...` icon for `Views and More Actions...`, then select `Install from VSIX...` selecting the download location of the extension from VS Code Marketplace.
+- Select the extensions icon located in the Activity Bar on the left side of the IDE.  
+- Select the `...` icon for `Views and More Actions...`
+- Select `Install from VSIX...` choosing the download location of the extension from VS Code Marketplace in the file picker.
 
 ### Build and Install Bank of Z
 
 ### Setup Bank of Z
 
-* Take a fork this repository, or move it into your own git provider
-* Follow the initial setup instuctions in [docs/README.md](docs/README.md) to install and configure Bank of Z to your own runtime environment.
+- Take a fork this repository, or move it into your own git provider
+- Follow the initial setup instuctions in [docs/README.md](docs/README.md) to install and configure Bank of Z to your own runtime environment.
 
 ## Tutorials
 
