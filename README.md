@@ -266,7 +266,7 @@ The general structure is
 To find the correct Version, check the Version History tab on the extension's Marketplace page or use `latest` as the version to download the latest published version.
 
 Example for CICS Interdependency Analyzer Extension for Zowe Explorer (using the IDs above)
-`https://ibm.gallery.vsassets.io/_apis/public/gallery/publisher/IBM/extension/cics-ia-extension-for-zowe/latest/asset/Microsoft.VisualStudio.Services.VSIXPackage`
+`https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/cics-ia-extension-for-zowe/latest/vspackage`
 
 Drop constructed URL into the browser and download should initiate.
 
