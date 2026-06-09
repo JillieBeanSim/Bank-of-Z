@@ -40,6 +40,10 @@ const VSIX_URLS = [
   {
     name: 'IBM z/OS Connect development tools',
     url: 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/ibm-zosconnect/latest/vspackage'
+  },
+  {
+    name: 'IBM TAZ Early Development Testing',
+    url: 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/taz-edt-extension/latest/vspackage'
   }
 ];
 

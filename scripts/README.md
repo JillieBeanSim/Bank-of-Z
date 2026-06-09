@@ -50,6 +50,7 @@ The script downloads the following extensions:
 3. **IBM IMS Explorer for VS Code**
 4. **IBM Db2 for z/OS Developer Extension**
 5. **IBM z/OS Connect development tools**
+6. **IBM TAZ Early Development Testing**
 
 ### Usage
 
@@ -114,7 +115,7 @@ After downloading, to install the extensions:
 ```bash
 Created directory: ./vsix-extensions
 
-Downloading 5 VSIX files...
+Downloading 6 VSIX files...
 
 [1/5] IDzEE Extension Pack
 Downloading: https://marketplace.visualstudio.com/_apis/public/gallery/publishers/IBM/vsextensions/application-delivery-foundation-for-zos-vscode-extension-pack/latest/vspackage
@@ -130,9 +131,9 @@ Downloading: https://marketplace.visualstudio.com/_apis/public/gallery/publisher
 
 ============================================================
 Download Summary:
-  Successful: 5
+  Successful: 6
   Failed: 0
-  Total: 5
+  Total: 6
   Output directory: /Users/username/Bank-of-Z/vsix-extensions
 ============================================================
 
@@ -224,13 +225,14 @@ VS Code Extension Installer
 ============================================================
 VSIX Directory: /Users/username/Bank-of-Z/vsix-extensions
 
-Found 5 extension(s) to install:
+Found 6 extension(s) to install:
 
   1. idzee-extension-pack.vsix
   2. cics-interdependency-analyzer-extension-for-zowe-explorer.vsix
   3. ibm-ims-explorer-for-vs-code.vsix
   4. ibm-db2-for-z-os-developer-extension.vsix
   5. ibm-z-os-connect-development-tools.vsix
+  6. ibm-taz-early-development-testing.vsix
 
 ============================================================
 
@@ -247,9 +249,9 @@ Installing: cics-interdependency-analyzer-extension-for-zowe-explorer.vsix
 ============================================================
 Installation Summary:
 
-  ✓ Successful: 5
+  ✓ Successful: 6
   ✗ Failed: 0
-  Total: 5
+  Total: 6
 ============================================================
 
 ✓ All extensions installed successfully!
@@ -384,13 +386,14 @@ Bob IDE Extension Installer
 ============================================================
 VSIX Directory: /Users/username/Bank-of-Z/vsix-extensions
 
-Found 5 extension(s) to install:
+Found 6 extension(s) to install:
 
   1. idzee-extension-pack.vsix
   2. cics-interdependency-analyzer-extension-for-zowe-explorer.vsix
   3. ibm-ims-explorer-for-vs-code.vsix
   4. ibm-db2-for-z-os-developer-extension.vsix
   5. ibm-z-os-connect-development-tools.vsix
+  6. ibm-taz-early-development-testing.vsix
 
 ============================================================
 
@@ -407,9 +410,9 @@ Installing: cics-interdependency-analyzer-extension-for-zowe-explorer.vsix
 ============================================================
 Installation Summary:
 
-  ✓ Successful: 5
+  ✓ Successful: 6
   ✗ Failed: 0
-  Total: 5
+  Total: 6
 ============================================================
 
 ✓ All extensions installed successfully!
